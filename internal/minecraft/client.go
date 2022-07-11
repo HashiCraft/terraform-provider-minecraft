@@ -13,6 +13,9 @@ type Client struct {
 	client *rcon.Client
 }
 
+type Player struct {
+}
+
 func New(address string, password string) (*Client, error) {
 	addressParts := strings.Split(address, ":")
 	host := addressParts[0]
@@ -27,6 +30,11 @@ func New(address string, password string) (*Client, error) {
 	}
 
 	return &Client{client}, nil
+}
+
+// Get a player.
+func (c Client) GetPlayer(ctx context.Context, name string) error {
+	return nil
 }
 
 // Creates a block.

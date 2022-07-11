@@ -8,11 +8,11 @@ description: |-
 
 # minecraft_block (Resource)
 
-The block resource allows you to create a block inside of a Minecraft world.
+A Minecraft block
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "minecraft_block" "stone" {
   material = "minecraft:stone"
 

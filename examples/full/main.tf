@@ -14,7 +14,7 @@ provider "minecraft" {
 }
 
 // Create a Minecraft block
-resource "minecraft_block" "cube" {
+resource "minecraft_block" "stone" {
   material = "minecraft:stone"
 
   position = {
