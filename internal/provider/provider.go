@@ -3,39 +3,27 @@ package provider
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicraft/terraform-provider-minecraft/internal/minecraft"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces
 var _ tfsdk.Provider = &provider{}
 
-// provider satisfies the tfsdk.Provider interface and usually is included
-// with all Resource and DataSource implementations.
 type provider struct {
-	// client can contain the upstream provider SDK or HTTP client used to
-	// communicate with the upstream service. Resource and DataSource
-	// implementations can then make calls using this client.
-	//
-	// TODO: If appropriate, implement upstream provider SDK or HTTP client.
-	// client vendorsdk.ExampleClient
+	address  string
+	password string
 
-	// configured is set to true at the end of the Configure method.
-	// This can be used in Resource and DataSource implementations to verify
-	// that the provider was previously configured.
 	configured bool
-
-	// version is set to the provider version on release, "dev" when the
-	// provider is built and ran locally, and "test" when running acceptance
-	// testing.
-	version string
+	version    string
 }
 
-// providerData can be used to store data from the Terraform configuration.
 type providerData struct {
-	Example types.String `tfsdk:"example"`
+	Address  types.String `tfsdk:"address"`
+	Password types.String `tfsdk:"password"`
 }
 
 func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderRequest, resp *tfsdk.ConfigureProviderResponse) {
@@ -47,33 +35,71 @@ func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderReq
 		return
 	}
 
-	// Configuration values are now available.
-	// if data.Example.Null { /* ... */ }
+	var address string
+	if data.Address.Null {
+		address = os.Getenv("MINECRAFT_ADDRESS")
+	} else {
+		address = data.Address.Value
+	}
 
-	// If the upstream provider SDK or HTTP client requires configuration, such
-	// as authentication or logging, this is a great opportunity to do so.
+	if address == "" {
+		resp.Diagnostics.AddError(
+			"Unable to create client",
+			"Address cannot be an empty string",
+		)
+		return
+	}
 
+	var password string
+	if data.Password.Null {
+		password = os.Getenv("MINECRAFT_PASSWORD")
+	} else {
+		password = data.Password.Value
+	}
+
+	if password == "" {
+		resp.Diagnostics.AddError(
+			"Unable to create client",
+			"Password cannot be an empty string",
+		)
+		return
+	}
+
+	p.address = address
+	p.password = password
 	p.configured = true
+}
+
+func (p *provider) GetClient(ctx context.Context) (*minecraft.Client, error) {
+	client, err := minecraft.New(p.address, p.password)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func (p *provider) GetResources(ctx context.Context) (map[string]tfsdk.ResourceType, diag.Diagnostics) {
 	return map[string]tfsdk.ResourceType{
-		"scaffolding_example": exampleResourceType{},
+		"minecraft_block": blockResourceType{},
 	}, nil
 }
 
 func (p *provider) GetDataSources(ctx context.Context) (map[string]tfsdk.DataSourceType, diag.Diagnostics) {
-	return map[string]tfsdk.DataSourceType{
-		"scaffolding_example": exampleDataSourceType{},
-	}, nil
+	return map[string]tfsdk.DataSourceType{}, nil
 }
 
 func (p *provider) GetSchema(ctx context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
 		Attributes: map[string]tfsdk.Attribute{
-			"example": {
-				MarkdownDescription: "Example provider attribute",
-				Optional:            true,
+			"address": {
+				MarkdownDescription: "The RCON address of the Minecraft server",
+				Required:            true,
+				Type:                types.StringType,
+			},
+			"password": {
+				MarkdownDescription: "The RCON address of the Minecraft server",
+				Required:            true,
 				Type:                types.StringType,
 			},
 		},
@@ -88,11 +114,6 @@ func New(version string) func() tfsdk.Provider {
 	}
 }
 
-// convertProviderType is a helper function for NewResource and NewDataSource
-// implementations to associate the concrete provider type. Alternatively,
-// this helper can be skipped and the provider type can be directly type
-// asserted (e.g. provider: in.(*provider)), however using this can prevent
-// potential panics.
 func convertProviderType(in tfsdk.Provider) (provider, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

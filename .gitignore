@@ -16,6 +16,7 @@ website/node_modules
 *.backup
 ./*.tfstate
 .terraform/
+examples/.terraform.lock.hcl
 *.log
 *.bak
 *~
@@ -26,6 +27,8 @@ website/node_modules
 *.iml
 
 website/vendor
+
+.vscode
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
