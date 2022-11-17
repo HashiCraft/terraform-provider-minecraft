@@ -58,7 +58,7 @@ func (t fillResourceType) GetSchema(ctx context.Context) (tfsdk.Schema, diag.Dia
 				}),
 			},
 			"end": {
-				MarkdownDescription: "The start position of the block",
+				MarkdownDescription: "The end position of the block",
 				Required:            true,
 				Attributes: tfsdk.SingleNestedAttributes(map[string]tfsdk.Attribute{
 					"x": {
