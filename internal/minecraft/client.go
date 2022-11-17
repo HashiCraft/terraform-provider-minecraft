@@ -47,6 +47,15 @@ func (c Client) CreateBlock(ctx context.Context, material string, x, y, z int) e
 
 	return nil
 }
+func (c Client) FillBlock(ctx context.Context, material string, sx, sy, sz, ex, ey, ez int) error {
+	command := fmt.Sprintf("fill %d %d %d %d %d %d %s hollow", sx, sy, sz, ex, ey, ez, material)
+	_, err := c.client.SendCommand(command)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // Deletes a block.
 func (c Client) DeleteBlock(ctx context.Context, x, y, z int) error {

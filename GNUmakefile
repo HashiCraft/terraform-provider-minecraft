@@ -7,15 +7,16 @@ testacc:
 
 name = minecraft
 organization = hashicraft
-version = 0.1.0
+version = 1.0.1
 log_level = info
+os_version = linux
 
 build:
 	go build -o bin/terraform-provider-$(name)_v$(version)
 
 install: build clean
-	mkdir -p ~/.terraform.d/plugins/local/$(organization)/$(name)/$(version)/linux_amd64
-	mv bin/terraform-provider-$(name)_v$(version) ~/.terraform.d/plugins/local/$(organization)/$(name)/$(version)/linux_amd64/
+	mkdir -p ~/.terraform.d/plugins/local/$(organization)/$(name)/$(version)/$(os_version)_amd64
+	mv bin/terraform-provider-$(name)_v$(version) ~/.terraform.d/plugins/local/$(organization)/$(name)/$(version)/$(os_version)_amd64/
 
 clean:
 	rm -rf example/.terraform*
